@@ -1,6 +1,6 @@
 public class LCA {
-	private int V;// # of vertices in graph
-	private int E;// # of edges in graph
+	private int totalVertices;// # of vertices in graph
+	private int totalEdges;// # of edges in graph
 	private int[][] adj; // adjacency list for vertex v 
 	private int[] outdegree;// outdegree of vertex v
 	private int[] indegree;  // indegree[v] = indegree of vertex v
@@ -14,11 +14,10 @@ public class LCA {
 			throw new NullPointerException();
 			
 		} else {
-			this.V = V;
-			this.E = 0;
-			indegree = new int[V];
-			indegree = new int[V];
+			this.totalVertices = V;
+			this.totalEdges = 0;
 			outdegree = new int[V];
+			indegree = new int[V];
 			visited = new int[V];
 			adj = new int[V][V];
 			for (int i = 0; i < V; i++) {
@@ -28,5 +27,15 @@ public class LCA {
 			}
 		}
     }
+
+    // returns total vertices in the graph
+    public int getTotalVertices() {
+		return totalVertices;
+    }
+    
+    // returns total vertices in the graph
+    public int getTotalEdges() {
+		return totalEdges;
+	}
     
 }
