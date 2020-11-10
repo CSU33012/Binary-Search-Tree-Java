@@ -1,190 +1,134 @@
-public class LCA {
-	private int totalVertices; // number of vertices in graph
-	private int totalEdges; // number of edges in graph
-	private int[][] adj; // adjacency list for vertex v 
-	private int[] outdegree; // number of connections outwards from this vertex
-	private int[] indegree;  // indegree[v] = indegree of vertex v
-	private int[] visited; // vertices that have been visited
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
-	
-	//Initialises an empty graph with size V vertices.
-	
-	public DAG(int v) {
-		if (V < 0) {
-			throw new NullPointerException();
-			
-		} else {
-			this.totalVertices = v;
-			this.totalEdges = 0;
-			outdegree = new int[v];
-			indegree = new int[v];
-			visited = new int[v];
-			adj = new int[v][v];
-			for (int i = 0; i < V; i++) {
-				for (int j = 0; j < V; j++) {
-					adj[i][j] = 0;
-				}
-			}
+public class DAG {
+    private int totalVertices; // The number of Vertices in the graph
+    private int totalEdges; // The number of edges in the graph
+    private ArrayList<Integer>[] adj; // An adjancencies list for each node in the graph
+    private int[] indegree; // stores the number of adjancencies pointing towards this node
+    private boolean marked[]; // tracks visited vertices
+    private boolean hasCycle; // will be true if a cycle is found within the graph
+    private boolean stack[]; // The visited order of vertices
+    private int[] distTo; // used for finding the shortest paths in the list
+    private int[] edgeTo; // used to document the route of the paths in the list
+
+    public DAG(int totalVertices){
+
+        if (totalVertices < 0) throw new IllegalArgumentException("The number of vertices in the graph must be greater than 0.");
+
+        //initialise variables
+        this.totalVertices = totalVertices;
+        this.totalEdges = 0;
+        this.indegree = new int[totalVertices];
+        this.marked = new boolean[totalVertices];
+        this.stack = new boolean[totalVertices];
+        this.adj = (ArrayList<Integer>[]) new ArrayList[totalVertices];
+
+        //initialise all the values of the adjancency list
+        for (int i = 0; i < totalVertices; i++){
+            adj[i] = new ArrayList<Integer>();
+        }
+
+    }
+
+    // returns the number of vertices
+    public int returnTotalVertices(){
+        return totalVertices;
+    }
+
+    // return the number of edges
+    public int returnTotalEdges(){
+        return totalEdges;
+    }
+
+    // checks that the vertex exists in the graph
+    public boolean validateVertex(int vertex){
+		if (vertex > 0 && vertex <= this.totalVertices)
+		{
+			return true;
 		}
+		else 
+		{
+            return false;
+        }
     }
 
-    // returns total vertices in the graph
-    public int getTotalVertices() {
-		return totalVertices;
+    // add a directed edge from arg1 to arg2
+    public boolean addEdge(int from, int to){
+		if (validateVertex(from) && validateVertex(to))
+		{
+            adj[from].add(to);  //add adjanceny to list
+            indegree[to]++;     //increase the tracking of the number of edges pointin into this node
+            totalEdges++;
+            return true;
+		}
+		else
+		{
+            System.out.println("Please enter vertices which exist within the graph");
+            return false;
+        }
     }
+
+
+    // returns the number of edges incident to the input argument vertex
+    public int indegree(int v){
+		if (!validateVertex(v))
+		{
+            //if the vertex does not exist return an error
+            return -1;
+		} 
+		else {
+            return this.indegree[v];
+        }
+    }
+
+    // returns the number of edges incident from the input argument vertex
+    public int outdegree(int v){
+		if (!validateVertex(v))
+		{
+            //return error case if vertex does not exist
+            return -1;
+		} 
+		else 
+		{
+            return this.adj[v].size();
+        }
+    }
+
+  
+    public Iterable<Integer> adj(int v){
+        return adj[v];
+    }
+
     
-    // returns total vertices in the graph
-    public int getTotalEdges() {
-		return totalEdges;
-	}
+    public boolean hasCycle(){ return this.hasCycle;}
 
-	// ensures the vertex v is legal/valid
-	public int validateVertex(int vertex) {
 
-		if ((vertex < totalVertices) || (vertex >= 0)) {
+    public boolean findCycle(int v){
+        marked[v] = true;
+        stack[v] = true;
 
-			System.out.println(-1);
-			return -1;
-
-		}
-		else return 1;
-
-	}
-
-	// adds an edge from tailVertex -> headVertex
-	public int addEdge(int tailVertex, int headVertex) {
-
-		if(validateVertex(tailVertex) != -1 && validateVertex(headVertex) != -1)
+		for (int i : adj(v))
 		{
-
-			adj[tailVertex][headVertex] = 1;
-			outdegree[tailVertex]++;
-			indegree[headVertex]++;
-			totalEdges++;
-			return 1;
-		} 
-		else return -1;
-
-	}
-
-	// remove the edge from tailVertex -> headVertex
-	public int removeEdge(int tailVertex, int headVertex) {
-		
-		if(validateVertex(tailVertex) != -1 && validateVertex(headVertex) != -1)
-		{
-
-			adj[tailVertex][headVertex] = 0;
-			outdegree[tailVertex]--;
-			indegree[headVertex]--;
-			totalEdges--;
-			return 1;
-			
-		} 
-		else return -1;
-
-	}
-
-	// returns the outdegree of a vertex
-	public int outdegree(int vertex) {
-
-		if(validateVertex(vertex) != -1)
-		{
-			return outdegree[vertex];
-
-		} 
-		else return -1;
-
-	}
-
-	// returns the indegree of a vertex
-	public int indegree(int vertex) {
-
-		if(validateVertex(vertex) != -1)
-		{
-			return indegree[vertex];
-
-		} 
-		else return -1;
-
-	}
-
-	// returns a list of the vertices that v is a tail to
-	public int[] adj(int v) {
-
-		if(validateVertex(v) != -1)
-		{
-
-			int[] temp = new int[outdegree[v]];
-			int count = 0;
-			for (int i = 0; i < totalVertices; i++) {
-				if (adj[v][i] == 1) {
-					temp[count] = i;
-					count++;
-				}
-			}
-		return temp;
-
-		}
-
-	}
-
-	// checks if the graph has a cycle, returns true if so, returns false otherwise
-	public boolean hasCycle() {
-
-		boolean hasCycle = false;
-
-		int count = 0;
-
-		for (int i = 0; i < V; i++) {
-
-			visited[count] = i;
-
-			for (int j = 0; j < V; j++) {
-
-				for (int k = 0; k < V; k++) {
-
-					if (visited[k] == j && adj[i][j] == 1) {
-
-						hasCycle = true;
-						return hasCycle;
-
-					}
-
-				}
-
-			}
-
-			count++;
-
-		}
-
-		return hasCycle;
-
-	}
-
-	// returns the lowest common ancestor between two vertices
-	public int findLCA(int vertexOne, int vertexTwo) {
-		
-		if(validateVertex(vertexOne) != -1 || validateVertex(vertexTwo) != -1)
-		{
-			if(!hasCycle()) 
+            //go through the adjacencies
+			if (!marked[i])
 			{
-
-				return 1;
-
-			} 
-			else 
+                //recursively find cycle for this node and its adjacencies
+                findCycle(i);
+            } 
+			else if (stack[i])
 			{
+                //the node has already been visited
+                hasCycle = true;
+                return true;    //return true as cycle is found
+            }
+        }
 
-				throw new NullPointerException();
-
-			}
-
-		}
-		
+        //remove the node 
+        stack[v] = false;
+        return false;
 	}
-
-
-
     
 }
