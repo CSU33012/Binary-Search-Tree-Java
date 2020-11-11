@@ -45,7 +45,7 @@ public class DAG {
 
     // checks that the vertex exists in the graph
     public boolean validateVertex(int vertex){
-		if (vertex > 0 && vertex <= this.totalVertices)
+		if (vertex >= 0 && vertex < this.totalVertices)
 		{
 			return true;
 		}
